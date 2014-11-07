@@ -5,10 +5,12 @@
   
 #include <sstream>
 
+static int distance_sensor_left, distance_sensor_right, distance_sensor_front;
+
 void TurnCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
  {
    distance_sensor_left = msg->ch1; 
-   distance_sensor_right = msg->ch3; 
+   distance_sensor_right = msg->ch2; 
    distance_sensor_front = msg->ch5;
    ROS_INFO("left: [%d], right: [%d], front: [%d]", distance_sensor_left, distance_sensor_right, distance_sensor_front);
  }
