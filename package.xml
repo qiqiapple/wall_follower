@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>ras_g3</name>
+  <name>wall_follower</name>
   <version>0.0.0</version>
-  <description>The ras_g3 package</description>
+  <description>The wall_follower package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -13,7 +13,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>BSD</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
@@ -42,8 +42,13 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>ras_arduino_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>ras_arduino_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+
 
 
   <!-- The export tag contains other, unspecified, tags -->

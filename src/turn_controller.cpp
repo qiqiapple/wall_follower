@@ -5,10 +5,12 @@
   
 #include <sstream>
 
+static int distance_sensor_left, distance_sensor_right, distance_sensor_front;
+
 void TurnCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
  {
    distance_sensor_left = msg->ch1; 
-   distance_sensor_right = msg->ch3; 
+   distance_sensor_right = msg->ch2; 
    distance_sensor_front = msg->ch5;
    ROS_INFO("left: [%d], right: [%d], front: [%d]", distance_sensor_left, distance_sensor_right, distance_sensor_front);
  }
@@ -23,12 +25,15 @@ void TurnCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
    ros::Publisher twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1000);
   
    thres_front = 10; //HERE TO CHANGE!
-   if (distance_sensor_front < thres_front){
+   if (distance_sensor_front > thres_front){
      if (distance_sensor_left<distance_sensor_right)
        turn_flag = 1; //left
      else
        turn_flag = -1; //right
    }
+   else{
+  // execute the wall_follower
+}
 
    ros::Rate loop_rate(10);
    int count = 0;
