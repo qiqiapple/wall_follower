@@ -1,5 +1,5 @@
-#include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 #include "ras_arduino_msgs/ADConverter.h"
   
@@ -161,7 +161,7 @@ private:
        state = 2;
    }
    else{
-     if(d2 < 15 && d2 > 0)
+     if(d2 < 30 && d2 > 0)
        state = 3;
      else
        state = 4;
