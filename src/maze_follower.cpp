@@ -166,6 +166,8 @@ private:
 
    MazeController mc = MazeController();
 
+   ros::Rate loop_rate(10);
+
    int thres_front = 10; //HERE TO CHANGE!
    int state = 0;
 
@@ -212,6 +214,8 @@ private:
         }
        mc.publishMsg();
        state = 0;
+       loop_rate.sleep();
+
    }
 
    return 0;
