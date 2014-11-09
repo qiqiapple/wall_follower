@@ -51,10 +51,7 @@ public:
            if (i < 10) {
                 msg.angular.z = 1.57;
                publishMsg();
-            } else {
-                  msg.angular.z = 0;
-                  publishMsg();
-           }
+            }
            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
         }
 /*
@@ -86,10 +83,7 @@ public:
             if (i < 10) {
                  msg.angular.z = -1.57;
                 publishMsg();
-             } else {
-                   msg.angular.z = 0;
-                   publishMsg();
-            }
+             }
             ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
               loop_rate.sleep();
           }
