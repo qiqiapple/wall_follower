@@ -35,19 +35,30 @@ public:
 
     void TurnLeft()
     {
-        //ros::Rate loop_rate(10);
-       int count = 0;
+        ros::Rate loop_rate(10);
+       //int count = 0;
        /*while (ros::ok() && count<10)
        {
          geometry_msgs::Twist msg;
 */
-         msg.linear.x = 0;
-         msg.linear.y = 0;
-         msg.linear.z = 0;
-         msg.angular.x = 0;
-         msg.angular.y = 0;
-         msg.angular.z = 0.314;
+       msg.linear.x = 0;
+       msg.linear.y = 0;
+       msg.linear.z = 0;
+       msg.angular.x = 0;
+       msg.angular.y = 0;
+       msg.angular.z = 0.314;
+       for (int i = 0; i < 50; i++) {
+           if (i >= 20 && i < 25) {
+               ROS_INFO("HOHO");
+                msg.angular.z = 0.314*2;
+               publishMsg();
+            } else {
+                  msg.angular.z = 0;
+                  publishMsg();
+           }
+           ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 
+        }
          ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 /*
          twist_pub.publish(msg);
@@ -60,8 +71,8 @@ public:
 
     void TurnRight()
     {
-        //ros::Rate loop_rate(10);
-       int count = 0;
+        ros::Rate loop_rate(10);
+       //int count = 0;
        /*while (ros::ok() && count<10)
        {
          geometry_msgs::Twist msg;
@@ -73,6 +84,19 @@ public:
          msg.angular.y = 0;
          msg.angular.z = -0.314;
 
+         for (int i = 0; i < 50; i++) {
+
+            if (i >= 20 && i < 25) {
+                ROS_INFO("HOHO");
+                 msg.angular.z = -0.314*2;
+                publishMsg();
+             } else {
+                   msg.angular.z = 0;
+                   publishMsg();
+            }
+            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
+              loop_rate.sleep();
+          }
          ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 /*
          twist_pub.publish(msg);
@@ -87,21 +111,33 @@ public:
     void StraightLeft()
     {
         //ros::Rate loop_rate(10);
-       double alpha = 0.05;
+       double alpha = 0.2;
        double diff_distance, angular_vel;
        //geometry_msgs::Twist msg;
-       msg.linear.x = 0;
+
+       if (d1 < 8 && d1 > 0 && d3 < 8 && d3 > 0) {
+
+         msg.linear.x = 0.1;
+         msg.angular.z = -0.314;
+
+       } else {
+
+        msg.linear.x = 0.1;
+
+        diff_distance = (double)(d1 - d3);
+        angular_vel = alpha*diff_distance;
+        msg.angular.z = angular_vel;
+       }
+
        msg.linear.y = 0;
        msg.linear.z = 0;
        msg.angular.x = 0;
        msg.angular.y = 0;
-       int count = 0;
+       //int count = 0;
        /*while (ros::ok())
        {
          //ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, MazeCallback);*/
-         diff_distance = (double)(d1 - d3);
-         angular_vel = alpha*diff_distance;
-         msg.angular.z = angular_vel;
+
          /*
          twist_pub.publish(msg);
          ROS_INFO("v: %f, w: %f", msg.linear.x,msg.angular.z);
@@ -115,22 +151,35 @@ public:
 
     void StraightRight()
     {
-       double alpha = -0.05;
+       double alpha = -0.2;
        double diff_distance, angular_vel;
         //ros::Rate loop_rate(10);
        //geometry_msgs::Twist msg;
-       msg.linear.x = 0;
+
+
+       if (d1 < 8 && d1 > 0 && d3 < 8 && d3 > 0) {
+
+         msg.linear.x = 0.1;
+         msg.angular.z = 0.314;
+
+       } else {
+
+        msg.linear.x = 0.1;
+
+        diff_distance = (double)(d2 - d4);
+        angular_vel = alpha*diff_distance;
+        msg.angular.z = angular_vel;
+       }
+
        msg.linear.y = 0;
        msg.linear.z = 0;
        msg.angular.x = 0;
        msg.angular.y = 0;
-       int count = 0;
+
        /*while (ros::ok())
        {
            //ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, MazeCallback);*/
-         diff_distance = (double)(d2 - d4);
-         angular_vel = alpha*diff_distance;
-         msg.angular.z = angular_vel;
+
          /*
          twist_pub.publish(msg);
          ROS_INFO("v: %f, w: %f", msg.linear.x,msg.angular.z);
@@ -143,7 +192,7 @@ public:
     }
 
     void stay() {
-        msg.linear.x = 0;
+        msg.linear.x = 0.1;
         msg.linear.y = 0;
         msg.linear.z = 0;
         msg.angular.x = 0;
@@ -168,7 +217,7 @@ private:
 
    ros::Rate loop_rate(10);
 
-   int thres_front = 10; //HERE TO CHANGE!
+   int thres_front = 30; //HERE TO CHANGE!
    int state = 0;
 
    while (ros::ok())
@@ -182,9 +231,9 @@ private:
            state = 2;
        }
        else{
-         if(d2 < 30 && d2 > 0)
+         if(d2 < 30 && d2 > 0 && d4 < 30 && d4 > 0)
            state = 3;
-         else if (d1 < 30 && d1 > 0)
+         else if (d1 < 30 && d1 > 0 && d3 < 30 && d3 >0)
            state = 4;
          else
              state = 0;
@@ -195,19 +244,19 @@ private:
        switch(state){
         case 0:
            mc.stay();
-           continue;
+           break;
         case 1:
              //turn left;
            mc.TurnLeft();
-           continue;
+           break;
          case 2:
              //turn right;
            mc.TurnRight();
-           continue;
+           break;
          case 3:
              //walk straight along the right wall
            mc.StraightRight();
-           continue;
+           break;
          case 4:
              //walk straight along the left wall
            mc.StraightLeft();
