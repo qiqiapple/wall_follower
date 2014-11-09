@@ -1,5 +1,5 @@
-#include "std_msgs/String.h"
 #include "ros/ros.h"
+#include "std_msgs/String.h"
 #include "geometry_msgs/Twist.h"
 #include "ras_arduino_msgs/ADConverter.h"
   
@@ -19,7 +19,7 @@ public:
     MazeController() {
         n = ros::NodeHandle();
         distance_sub = n.subscribe("/ir_sensor_cm", 1, &MazeController::MazeCallback, this);
-        twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1000);
+        twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
         //loop_rate(10);
     }
 
@@ -51,8 +51,12 @@ public:
            if (i < 10) {
                 msg.angular.z = 1.57;
                publishMsg();
-            }
+            } else {
+            msg.angular.z = 0;
+            publishMsg();
+           }
            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
+           loop_rate.sleep();
         }
 /*
          twist_pub.publish(msg);
@@ -83,7 +87,10 @@ public:
             if (i < 10) {
                  msg.angular.z = -1.57;
                 publishMsg();
-             }
+             } else {
+                msg.angular.z = 0;
+                publishMsg();
+            }
             ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
               loop_rate.sleep();
           }
@@ -205,6 +212,7 @@ private:
    MazeController mc = MazeController();
 
    ros::Rate loop_rate(10);
+   ros::Rate rate(1/5);
 
    int thres_front = 30; //HERE TO CHANGE!
    int state = 0;
@@ -252,7 +260,8 @@ private:
         }
        mc.publishMsg();
        state = 0;
-       loop_rate.sleep();
+       if (state == 1 || state == 2) rate.sleep();
+       else loop_rate.sleep();
 
    }
 
