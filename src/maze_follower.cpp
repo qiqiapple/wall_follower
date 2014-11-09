@@ -6,7 +6,6 @@
 #include <sstream>
 
 int d1, d2, d3, d4, d5;
-//ros::NodeHandle n;
 
 class MazeController {
 
@@ -20,7 +19,6 @@ public:
         n = ros::NodeHandle();
         distance_sub = n.subscribe("/ir_sensor_cm", 1, &MazeController::MazeCallback, this);
         twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
-        //loop_rate(10);
     }
 
     void MazeCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
@@ -35,12 +33,8 @@ public:
 
     void TurnLeft()
     {
-        ros::Rate loop_rate(10);
-       //int count = 0;
-       /*while (ros::ok() && count<10)
-       {
-         geometry_msgs::Twist msg;
-*/
+       ros::Rate loop_rate(10);
+
        msg.linear.x = 0;
        msg.linear.y = 0;
        msg.linear.z = 0;
@@ -49,7 +43,7 @@ public:
        msg.angular.z = 0.314;
        for (int i = 0; i < 30; i++) {
            if (i < 10) {
-                msg.angular.z = 1.57;
+               msg.angular.z = 1.57;
                publishMsg();
             } else {
             msg.angular.z = 0;
@@ -58,29 +52,19 @@ public:
            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
            loop_rate.sleep();
         }
-/*
-         twist_pub.publish(msg);
 
-         ros::spinOnce();
-         loop_rate.sleep();
-         ++count;
-       }*/
     }
 
     void TurnRight()
     {
         ros::Rate loop_rate(10);
-       //int count = 0;
-       /*while (ros::ok() && count<10)
-       {
-         geometry_msgs::Twist msg;
-*/
-         msg.linear.x = 0;
-         msg.linear.y = 0;
-         msg.linear.z = 0;
-         msg.angular.x = 0;
-         msg.angular.y = 0;
-         msg.angular.z = -0.314;
+
+        msg.linear.x = 0;
+        msg.linear.y = 0;
+        msg.linear.z = 0;
+        msg.angular.x = 0;
+        msg.angular.y = 0;
+        msg.angular.z = -0.314;
 
          for (int i = 0; i < 30; i++) {
 
@@ -92,24 +76,15 @@ public:
                 publishMsg();
             }
             ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
-              loop_rate.sleep();
+            loop_rate.sleep();
           }
-/*
-         twist_pub.publish(msg);
-
-         ros::spinOnce();
-         loop_rate.sleep();
-         ++count;
-       }*/
 
     }
 
     void StraightLeft()
     {
-        //ros::Rate loop_rate(10);
        double alpha = 0.2;
        double diff_distance, angular_vel;
-       //geometry_msgs::Twist msg;
 
        if (d1 < 8 && d1 > 0 && d3 < 8 && d3 > 0) {
 
@@ -129,19 +104,6 @@ public:
        msg.linear.z = 0;
        msg.angular.x = 0;
        msg.angular.y = 0;
-       //int count = 0;
-       /*while (ros::ok())
-       {
-         //ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, MazeCallback);*/
-
-         /*
-         twist_pub.publish(msg);
-         ROS_INFO("v: %f, w: %f", msg.linear.x,msg.angular.z);
-
-         ros::spinOnce();
-         loop_rate.sleep();
-         ++count;
-       }*/
 
     }
 
@@ -149,9 +111,6 @@ public:
     {
        double alpha = -0.2;
        double diff_distance, angular_vel;
-        //ros::Rate loop_rate(10);
-       //geometry_msgs::Twist msg;
-
 
        if (d1 < 8 && d1 > 0 && d3 < 8 && d3 > 0) {
 
@@ -172,19 +131,6 @@ public:
        msg.angular.x = 0;
        msg.angular.y = 0;
 
-       /*while (ros::ok())
-       {
-           //ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, MazeCallback);*/
-
-         /*
-         twist_pub.publish(msg);
-         ROS_INFO("v: %f, w: %f", msg.linear.x,msg.angular.z);
-
-         ros::spinOnce();
-         loop_rate.sleep();
-         ++count;
-       }*/
-
     }
 
     void stay() {
@@ -201,7 +147,6 @@ public:
     }
 
 private:
-    //ros::Rate loop_rate(10);
     geometry_msgs::Twist msg;
 };
 
@@ -223,17 +168,17 @@ private:
 
        if (d5 < thres_front && d5 > 0){
          if (d1 > d2)
-           state = 1;
+            state = 1;
          else
-           state = 2;
+            state = 2;
        }
        else{
          if(d2 < 30 && d2 > 0 && d4 < 30 && d4 > 0)
-           state = 3;
+            state = 3;
          else if (d1 < 30 && d1 > 0 && d3 < 30 && d3 >0)
-           state = 4;
+            state = 4;
          else
-             state = 0;
+            state = 0;
        }
 
        ROS_INFO("State: %d", state);
