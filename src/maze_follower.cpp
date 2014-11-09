@@ -47,19 +47,16 @@ public:
        msg.angular.x = 0;
        msg.angular.y = 0;
        msg.angular.z = 0.314;
-       for (int i = 0; i < 50; i++) {
-           if (i >= 20 && i < 25) {
-               ROS_INFO("HOHO");
-                msg.angular.z = 0.314*2;
+       for (int i = 0; i < 30; i++) {
+           if (i < 10) {
+                msg.angular.z = 1.57;
                publishMsg();
             } else {
                   msg.angular.z = 0;
                   publishMsg();
            }
            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
-
         }
-         ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 /*
          twist_pub.publish(msg);
 
@@ -84,11 +81,10 @@ public:
          msg.angular.y = 0;
          msg.angular.z = -0.314;
 
-         for (int i = 0; i < 50; i++) {
+         for (int i = 0; i < 30; i++) {
 
-            if (i >= 20 && i < 25) {
-                ROS_INFO("HOHO");
-                 msg.angular.z = -0.314*2;
+            if (i < 10) {
+                 msg.angular.z = -1.57;
                 publishMsg();
              } else {
                    msg.angular.z = 0;
@@ -97,7 +93,6 @@ public:
             ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
               loop_rate.sleep();
           }
-         ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 /*
          twist_pub.publish(msg);
 
