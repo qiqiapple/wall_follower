@@ -49,7 +49,7 @@ public:
             msg.angular.z = 0;
             publishMsg();
            }
-           ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
+           //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
            loop_rate.sleep();
         }
 
@@ -75,7 +75,7 @@ public:
                 msg.angular.z = 0;
                 publishMsg();
             }
-            ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
+            //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
             loop_rate.sleep();
           }
 
