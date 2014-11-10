@@ -1,22 +1,31 @@
-#include "ros/ros.h"
-#include "geometry_msgs/Twist.h"
-#include "ras_arduino_msgs/ADConverter.h"
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <ras_arduino_msgs/Encoders.h>
 #include <wall_follower/MakeTurn.h>
+#include <math.h>
   
-static int distance_sensor_left, distance_sensor_right, distance_sensor_front;
+static int delta_encoder_left, delta_encoder_right;
 ros::Publisher twist_pub;
 
-/*void TurnCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
- {
-   distance_sensor_left = msg->ch1; 
-   distance_sensor_right = msg->ch2; 
-   distance_sensor_front = msg->ch5;
-   ROS_INFO("left: [%d], right: [%d], front: [%d]", distance_sensor_left, distance_sensor_right, distance_sensor_front);
- }*/
+void EncoderCallback(const ras_arduino_msgs::EncodersConstPtr &msg) {
+    delta_encoder_left = msg->delta_encoder2;
+    delta_encoder_right = msg->delta_encoder1;
+}
 
 bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Response &res) {
 
     geometry_msgs::Twist msg;
+    double base = 0.21;
+    double wheel_radius = 0.05;
+
+    int angle = M_PI/4;
+    double distance_per_wheel = 2*M_PI*wheel_radius;
+    double distance_per_tick = distance_per_wheel/360;
+    double distance_circuit = 2*M_PI*base/2;
+
+    double fraction_circuit = angle/(2*M_PI);
+
+    int ticks = nearbyint(fraction_circuit*distance_circuit/distance_per_tick);
 
     msg.linear.x = 0;
     msg.linear.y = 0;
@@ -32,7 +41,20 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
 
     ros::Rate loop_rate(10);
 
-     for (int i = 0; i < 30; i++) {
+    int left_encoder = 0;
+    int right_encoder = 0;
+
+    while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
+
+        left_encoder += delta_encoder_left;
+        right_encoder += delta_encoder_right;
+
+        twist_pub.publish(msg);
+    }
+
+    msg.angular.z = 0;
+    twist_pub.publish(msg);
+     /*for (int i = 0; i < 30; i++) {
 
         if (i < 10) {
             twist_pub.publish(msg);
@@ -42,9 +64,9 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
         }
         //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
         loop_rate.sleep();
-      }
+      }*/
 
-    ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
+    //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 
     return true;
 }
@@ -54,7 +76,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     ros::init(argc, argv, "turn_controller");
     ros::NodeHandle n;
 
-    //ros::Subscriber turn_sub = n.subscribe("/ir_sensor_cm", 1, TurnCallback);
+    ros::Subscriber enc_sub = n.subscribe("/arduino/encoders", 1, EncoderCallback);
     twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
     ros::ServiceServer service = n.advertiseService("make_turn", turn);
 
