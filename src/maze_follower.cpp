@@ -112,7 +112,7 @@ public:
        double alpha = -0.2;
        double diff_distance, angular_vel;
 
-       if (d1 < 8 && d1 > 0 && d3 < 8 && d3 > 0) {
+       if (d2 < 8 && d2 > 0 && d4 < 8 && d4 > 0) {
 
          msg.linear.x = 0.1;
          msg.angular.z = 0.314;
