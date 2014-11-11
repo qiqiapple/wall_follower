@@ -84,7 +84,7 @@ private:
     MazeController mc = MazeController();
 
     ros::Rate loop_rate(10);
-    ros::Rate rate(1/10);
+    ros::Rate rate(1/5);
 
     int thres_front = 20; //HERE TO CHANGE!
     int state = 0;

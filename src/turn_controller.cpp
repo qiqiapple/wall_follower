@@ -39,12 +39,12 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     int flag;
 
     if (req.state == 1) {
-        msg.angular.z = 1.57/3;
+        msg.angular.z = 1.57/2;
         flag = 1;
-    } else {
-        msg.angular.z = -1.57/3;
+    } else if (req.state == 2){
+        msg.angular.z = -1.57/2;
         flag = -1;
-    }
+    } else return true;
 
     ros::Rate loop_rate(10);
 
@@ -57,7 +57,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     if (reset_client.call(srv)) {
     ROS_INFO("Succesfully called a service");
 
-    while (abs(left_encoder) < ticks-10 && abs(right_encoder) < ticks-10) {//(abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
+    while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {//(abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
 
         ROS_INFO("Ticks to rotate: %d", ticks);
         ros::spinOnce();
