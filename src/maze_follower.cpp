@@ -48,7 +48,7 @@ public:
         srv_turn.request.state = state;
         srv_follow.request.state = state;
         if (state == 1 || state == 2) {
-            srv_turn.request.degrees = (state == 1) ? 70 : -70;
+            srv_turn.request.degrees = (state == 1) ? 90 : -90;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
               }
