@@ -94,7 +94,7 @@ private:
        ros::spinOnce();
 
        if (d5 < thres_front && d5 > 0){
-         if (d1 > d2)
+         if (d1 < d2)
             state = 1;
          else
             state = 2;
