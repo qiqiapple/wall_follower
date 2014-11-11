@@ -2,6 +2,8 @@
 #include <geometry_msgs/Twist.h>
 #include <ras_arduino_msgs/ADConverter.h>
 #include <wall_follower/MakeTurn.h>
+#include <wall_follower/FollowWall.h>
+#include <math.h>
   
 int d1, d2, d3, d4, d5;
 
@@ -18,7 +20,7 @@ public:
         distance_sub = n.subscribe("/ir_sensor_cm", 1, &MazeController::MazeCallback, this);
         twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
         turn_client = n.serviceClient<wall_follower::MakeTurn>("make_turn");
-        follow_client = n.serviceClient<wall_follower::MakeTurn>("follow_wall");
+        follow_client = n.serviceClient<wall_follower::FollowWall>("follow_wall");
     }
 
     void MazeCallback(const ras_arduino_msgs::ADConverterConstPtr &msg) {
@@ -44,8 +46,10 @@ public:
 
     void setClient(int state) {
         srv.request.state = state;
-        if (state == 1 || state == 2)
+        if (state == 1 || state == 2) {
             client = turn_client;
+            srv.request.degrees = (state == 1) ? 90 : -90;
+        }
         else if (state == 3 || state == 4)
             client = follow_client;
 

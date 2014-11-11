@@ -18,12 +18,12 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     double base = 0.21;
     double wheel_radius = 0.05;
 
-    int angle = M_PI/4;
+    double angle = req.degrees;
     double distance_per_wheel = 2*M_PI*wheel_radius;
     double distance_per_tick = distance_per_wheel/360;
-    double distance_circuit = 2*M_PI*base/2;
+    double distance_circuit = M_PI*base;
 
-    double fraction_circuit = angle/(2*M_PI);
+    double fraction_circuit = angle/(360);
 
     int ticks = nearbyint(fraction_circuit*distance_circuit/distance_per_tick);
 
@@ -50,6 +50,8 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
         right_encoder += delta_encoder_right;
 
         twist_pub.publish(msg);
+
+        loop_rate.sleep();
     }
 
     msg.angular.z = 0;

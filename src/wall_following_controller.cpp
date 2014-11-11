@@ -1,11 +1,8 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "geometry_msgs/Twist.h"
-#include "ras_arduino_msgs/ADConverter.h"
-#include <wall_follower/MakeTurn.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <ras_arduino_msgs/ADConverter.h>
+#include <wall_follower/FollowWall.h>
   
-#include <sstream>
-
 static int distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback;
 ros::Publisher twist_pub;
 
@@ -15,10 +12,10 @@ void DistanceCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
    distance_sensor_rightfront = msg->ch2;
    distance_sensor_leftback = msg->ch3;
    distance_sensor_rightback = msg->ch4;
-   ROS_INFO("dlf: [%d], drf: [%d], dlb: [%d], drb: [%d]", distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback);
+   //ROS_INFO("dlf: [%d], drf: [%d], dlb: [%d], drb: [%d]", distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback);
  }
 
-bool follow(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Response &res) {
+bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::Response &res) {
 
     geometry_msgs::Twist msg;
     int sensor1, sensor2, flag;
@@ -33,7 +30,7 @@ bool follow(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Resp
         flag = 1;
     } else return false;
 
-    double alpha = flag*(-0.2);
+    double alpha = flag*(-0.15);
     double diff_distance, angular_vel;
 
     if (sensor1 < 8 && sensor1 > 0 && sensor2 < 8 && sensor2 > 0) {
