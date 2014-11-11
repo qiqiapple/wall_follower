@@ -86,7 +86,7 @@ private:
     ros::Rate loop_rate(10);
     ros::Rate rate(1/10);
 
-    int thres_front = 30; //HERE TO CHANGE!
+    int thres_front = 20; //HERE TO CHANGE!
     int state = 0;
 
    while (ros::ok())
