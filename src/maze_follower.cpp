@@ -44,32 +44,36 @@ public:
         twist_pub.publish(msg);
     }
 
-    void setClient(int state) {
-        srv.request.state = state;
+    void setClientCall(int state) {
+        srv_turn.request.state = state;
+        srv_follow.request.state = state;
         if (state == 1 || state == 2) {
-            client = turn_client;
-            srv.request.degrees = (state == 1) ? 90 : -90;
+            srv_turn.request.degrees = (state == 1) ? 70 : -70;
+            if (turn_client.call(srv_turn)) {
+                ROS_INFO("Succesfully called a service");
+              }
+              else
+              {
+                ROS_ERROR("Failed to call turn service in maze_follower");
+              }
         }
-        else if (state == 3 || state == 4)
-            client = follow_client;
-
-    }
-
-    void callService() {
-        if (client.call(srv)) {
-            ROS_INFO("Succesfully called a service");
-          }
-          else
-          {
-            ROS_ERROR("Failed to call service in maze_follower");
-          }
+        else if (state == 3 || state == 4) {
+            if (follow_client.call(srv_follow)) {
+                ROS_INFO("Succesfully called a service");
+              }
+              else
+              {
+                ROS_ERROR("Failed to call follow service in maze_follower");
+              }
+        }
     }
 
 private:
     ros::ServiceClient turn_client;
     ros::ServiceClient follow_client;
-    ros::ServiceClient client;
-    wall_follower::MakeTurn srv;
+    //ros::ServiceClient client;
+    wall_follower::MakeTurn srv_turn;
+    wall_follower::FollowWall srv_follow;
 
     geometry_msgs::Twist msg;
 };
@@ -111,8 +115,8 @@ private:
         mc.stay();
         mc.publishMsg();
        } else {
-        mc.setClient(state);
-        mc.callService();
+        mc.setClientCall(state);
+        //mc.callService();
        }
 
        state = 0;
