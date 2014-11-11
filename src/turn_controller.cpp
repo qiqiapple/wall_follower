@@ -55,28 +55,33 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     srv.request.reset = 1;
 
     if (reset_client.call(srv)) {
-    ROS_INFO("Succesfully called a service");
+        ROS_INFO("Succesfully called a service");
 
-    while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {//(abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
+        while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {//(abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
 
-        ROS_INFO("Ticks to rotate: %d", ticks);
-        ros::spinOnce();
+            ROS_INFO("Ticks to rotate: %d", ticks);
+            ros::spinOnce();
 
-        left_encoder += delta_encoder_left;
-        right_encoder += delta_encoder_right;
+            left_encoder += delta_encoder_left;
+            right_encoder += delta_encoder_right;
 
-        twist_pub.publish(msg);
+            twist_pub.publish(msg);
 
-        ROS_INFO("w = %f", msg.angular.z);
-        ROS_INFO("Left encoder: %d Right encoder: %d", left_encoder, right_encoder);
+            ROS_INFO("w = %f", msg.angular.z);
+            ROS_INFO("Left encoder: %d Right encoder: %d", left_encoder, right_encoder);
 
-        loop_rate.sleep();
-    }
-
-    }
-    else
+            loop_rate.sleep();
+        }
+    } else
     {
     ROS_ERROR("Failed to call service. No turn performed.");
+    }
+
+    if (reset_client.call(srv)) {
+        ROS_INFO("Succesfully called a service");
+    } else
+    {
+        ROS_ERROR("Failed to call service. No turn performed.");
     }
 
     msg.angular.z = 0;
