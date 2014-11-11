@@ -13,6 +13,7 @@ add_service_files(
 	FILES
 	MakeTurn.srv
         FollowWall.srv
+	ResetPWM.srv
 )
 
 generate_messages(

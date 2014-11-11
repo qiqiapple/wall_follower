@@ -2,14 +2,17 @@
 #include <geometry_msgs/Twist.h>
 #include <ras_arduino_msgs/Encoders.h>
 #include <wall_follower/MakeTurn.h>
+#include <wall_follower/ResetPWM.h>
 #include <math.h>
   
 static int delta_encoder_left, delta_encoder_right;
 ros::Publisher twist_pub;
+ros::ServiceClient reset_client;
 
 void EncoderCallback(const ras_arduino_msgs::EncodersConstPtr &msg) {
     delta_encoder_left = msg->delta_encoder2;
     delta_encoder_right = msg->delta_encoder1;
+    //ROS_INFO("Delta left: %d Delta right: %d", delta_encoder_left, delta_encoder_right);
 }
 
 bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Response &res) {
@@ -33,10 +36,14 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     msg.angular.x = 0;
     msg.angular.y = 0;
 
+    int flag;
+
     if (req.state == 1) {
-        msg.angular.z = 1.57;
+        msg.angular.z = 1.57/3;
+        flag = 1;
     } else {
-        msg.angular.z = -1.57;
+        msg.angular.z = -1.57/3;
+        flag = -1;
     }
 
     ros::Rate loop_rate(10);
@@ -44,14 +51,39 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     int left_encoder = 0;
     int right_encoder = 0;
 
-    while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
+    wall_follower::ResetPWM srv;
+    srv.request.reset = 1;
+
+    if (reset_client.call(srv)) {
+    ROS_INFO("Succesfully called a service");
+
+    while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {//(abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
+
+        ROS_INFO("Ticks to rotate: %d", ticks);
+        ros::spinOnce();
 
         left_encoder += delta_encoder_left;
         right_encoder += delta_encoder_right;
 
+        /*int left = ticks + flag*left_encoder;
+        int right = ticks - flag*right_encoder;
+        double error = (left + right)/2;
+        double alpha = 0.001;
+
+        msg.angular.z = msg.angular.z + flag*alpha*error;
+*/
         twist_pub.publish(msg);
 
+        ROS_INFO("w = %f", msg.angular.z);
+        ROS_INFO("Left encoder: %d Right encoder: %d", left_encoder, right_encoder);
+
         loop_rate.sleep();
+    }
+
+    }
+    else
+    {
+    ROS_ERROR("Failed to call service. No turn performed.");
     }
 
     msg.angular.z = 0;
@@ -81,6 +113,8 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     ros::Subscriber enc_sub = n.subscribe("/arduino/encoders", 1, EncoderCallback);
     twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
     ros::ServiceServer service = n.advertiseService("make_turn", turn);
+    reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
+
 
     ROS_INFO("Ready to make a turn.");
     ros::spin();
