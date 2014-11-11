@@ -19,8 +19,8 @@ public:
         n = ros::NodeHandle();
         distance_sub = n.subscribe("/ir_sensor_cm", 1, &MazeController::MazeCallback, this);
         twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
-        turn_client = n.serviceClient<wall_follower::MakeTurn>("make_turn");
-        follow_client = n.serviceClient<wall_follower::FollowWall>("follow_wall");
+        turn_client = n.serviceClient<wall_follower::MakeTurn>("/make_turn");
+        follow_client = n.serviceClient<wall_follower::FollowWall>("/follow_wall");
     }
 
     void MazeCallback(const ras_arduino_msgs::ADConverterConstPtr &msg) {
@@ -61,7 +61,7 @@ public:
           }
           else
           {
-            ROS_ERROR("Failed to call service add_two_ints");
+            ROS_ERROR("Failed to call service in maze_follower");
           }
     }
 

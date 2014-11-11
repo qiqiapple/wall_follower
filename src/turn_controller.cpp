@@ -65,13 +65,6 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
         left_encoder += delta_encoder_left;
         right_encoder += delta_encoder_right;
 
-        /*int left = ticks + flag*left_encoder;
-        int right = ticks - flag*right_encoder;
-        double error = (left + right)/2;
-        double alpha = 0.001;
-
-        msg.angular.z = msg.angular.z + flag*alpha*error;
-*/
         twist_pub.publish(msg);
 
         ROS_INFO("w = %f", msg.angular.z);
@@ -88,19 +81,6 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
 
     msg.angular.z = 0;
     twist_pub.publish(msg);
-     /*for (int i = 0; i < 30; i++) {
-
-        if (i < 10) {
-            twist_pub.publish(msg);
-         } else {
-            msg.angular.z = 0;
-            twist_pub.publish(msg);
-        }
-        //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
-        loop_rate.sleep();
-      }*/
-
-    //ROS_INFO("v: %f, w: %f", msg.linear.x, msg.angular.z);
 
     return true;
 }
@@ -112,7 +92,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
 
     ros::Subscriber enc_sub = n.subscribe("/arduino/encoders", 1, EncoderCallback);
     twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
-    ros::ServiceServer service = n.advertiseService("make_turn", turn);
+    ros::ServiceServer service = n.advertiseService("/make_turn", turn);
     reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
 
 

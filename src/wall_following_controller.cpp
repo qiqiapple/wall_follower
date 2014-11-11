@@ -63,7 +63,7 @@ bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::
     ros::NodeHandle n;
     ros::Subscriber distance_sub = n.subscribe("/ir_sensor_cm", 1, DistanceCallback);
     twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
-    ros::ServiceServer service = n.advertiseService("follow_wall", follow);
+    ros::ServiceServer service = n.advertiseService("/follow_wall", follow);
 
     ros::spin();
 
