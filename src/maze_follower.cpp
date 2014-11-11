@@ -48,7 +48,7 @@ public:
         srv_turn.request.state = state;
         srv_follow.request.state = state;
         if (state == 1 || state == 2) {
-            srv_turn.request.degrees = (state == 1) ? 90 : -90;
+            srv_turn.request.degrees = 90;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
               }
@@ -84,7 +84,6 @@ private:
     MazeController mc = MazeController();
 
     ros::Rate loop_rate(10);
-    ros::Rate rate(1/5);
 
     int thres_front = 20; //HERE TO CHANGE!
     int state = 0;
@@ -115,12 +114,11 @@ private:
         mc.publishMsg();
        } else {
         mc.setClientCall(state);
-        //mc.callService();
        }
 
        state = 0;
-       if (state == 1 || state == 2) rate.sleep();
-       else loop_rate.sleep();
+
+       loop_rate.sleep();
 
    }
 

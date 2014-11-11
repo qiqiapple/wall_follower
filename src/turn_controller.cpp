@@ -36,14 +36,10 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     msg.angular.x = 0;
     msg.angular.y = 0;
 
-    int flag;
-
     if (req.state == 1) {
         msg.angular.z = 1.57/2;
-        flag = 1;
     } else if (req.state == 2){
         msg.angular.z = -1.57/2;
-        flag = -1;
     } else return true;
 
     ros::Rate loop_rate(10);
