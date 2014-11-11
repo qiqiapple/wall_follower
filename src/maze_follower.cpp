@@ -97,9 +97,9 @@ private:
             state = 2;
        }
        else{
-         if(d2 < 30 && d2 > 0 && d4 < 30 && d4 > 0)
+         if(d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)
             state = 3;
-         else if (d1 < 30 && d1 > 0 && d3 < 30 && d3 >0)
+         else if (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)
             state = 4;
          else
             state = 0;
