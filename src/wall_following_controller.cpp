@@ -54,6 +54,8 @@ bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::
 
     twist_pub.publish(msg);
 
+    return true;
+
 }
 
  int main(int argc, char **argv)

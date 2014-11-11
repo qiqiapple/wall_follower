@@ -71,7 +71,6 @@ public:
 private:
     ros::ServiceClient turn_client;
     ros::ServiceClient follow_client;
-    //ros::ServiceClient client;
     wall_follower::MakeTurn srv_turn;
     wall_follower::FollowWall srv_follow;
 
@@ -85,7 +84,7 @@ private:
     MazeController mc = MazeController();
 
     ros::Rate loop_rate(10);
-    ros::Rate rate(1/5);
+    ros::Rate rate(1/10);
 
     int thres_front = 30; //HERE TO CHANGE!
     int state = 0;
