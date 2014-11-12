@@ -5,8 +5,12 @@
 #include <wall_follower/FollowWall.h>
 #include <wall_follower/ResetPWM.h>
 #include <math.h>
+
+#define INVALID 1000
+
+enum {LEFT_TURN = 1, RIGHT_TURN = 2, FORWARD = 0, FOLLOW_LEFT = 3, FOLLOW_RIGHT = 4};
   
-int front_left, front_right, back_left, back_right, front;
+int front_left, front_right, back_left, back_right, front, state;
 
 class MazeController {
 
@@ -66,7 +70,7 @@ public:
         srv_turn.request.state = state;
         srv_follow.request.state = state;
         if (state == 1 || state == 2 || state == 5) {
-            srv_turn.request.degrees = (state == 1 || state == 2) ? 90 : 180;
+            srv_turn.request.degrees = 90;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
               }
@@ -84,6 +88,12 @@ public:
                 ROS_ERROR("Failed to call follow service in maze_follower");
               }
         }
+    }
+
+    void changeState(int s) {
+        std::cout << "want to change the state " << s << std::endl;
+        std::cin.ignore();
+        state = s;
     }
 
 private:
@@ -105,40 +115,39 @@ private:
     ros::Rate loop_rate(10);
 
     int thres_front = 20; //HERE TO CHANGE!
-    int state = 0;
+    state = 0;
 
    while (ros::ok())
    {
        ros::spinOnce();
 
-       if (front < thres_front && front > 0){
-            if (front_left > 0 &&
-                    front_left < 20 &&
-                    front_right > 0 &&
-                    front_right < 20)
-               state = 5;
-            else if (front_left > front_right) {// ||
-                     //(front_right == 0 && front_left > 0))
-                state = 2;
+       if (front < thres_front){
+           if (front_left > front_right ||
+                   back_left > back_right) {
+                state = LEFT_TURN;
             }
             else
-                state = 1;
+                state = RIGHT_TURN;
        }
        else{
-           if ((front_left > 0 && (front_left < front_right || front_right == 0)) && (front_left < 30 && front_left > 0 && back_left < 30 && back_left > 0)) {
-                state = 3;
-           } else if ((front_right > 0 &&
-                       (front_right < front_left || front_left == 0)) &&
-                      (front_right < 30 && front_right > 0 && back_right < 30 && back_right >0)) {
-                state = 4;
+           if (front_left < front_right &&
+                   back_left < back_right &&
+                   front_left < 30 &&
+                   back_left < 30) {
+                state = FOLLOW_LEFT;
+           } else if (front_right < front_left &&
+                      back_right < back_left &&
+                      front_right < 30 &&
+                      back_right < 30) {
+                state = FOLLOW_RIGHT;
            }
             else
-                state = 0;
+                state = FORWARD;
        }
 
        ROS_INFO("State: %d", state);
 
-       if (state == 0) {
+       if (state == FORWARD) {
         mc.forward();
         mc.publishMsg();
        } else {
@@ -146,7 +155,7 @@ private:
        }
 
        mc.previous_state = state;
-       state = 0;
+       state = FORWARD;
 
        loop_rate.sleep();
 
