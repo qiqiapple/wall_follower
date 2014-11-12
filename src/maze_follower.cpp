@@ -8,7 +8,7 @@
 
 #define INVALID 1000
 
-enum {LEFT_TURN = 1, RIGHT_TURN = 2, FORWARD = 0, FOLLOW_LEFT = 3, FOLLOW_RIGHT = 4};
+enum {FORWARD = 0, LEFT_TURN = 1, RIGHT_TURN = 2, FOLLOW_LEFT = 3, FOLLOW_RIGHT = 4};
   
 int front_left, front_right, back_left, back_right, front, state;
 
@@ -115,13 +115,13 @@ private:
     ros::Rate loop_rate(10);
 
     int thres_front = 20; //HERE TO CHANGE!
-    state = 0;
+    state = FORWARD;
 
    while (ros::ok())
    {
        ros::spinOnce();
 
-       if (front < thres_front){
+       if (front < thres_front && front > 0){
            if (front_left > front_right ||
                    back_left > back_right) {
                 state = LEFT_TURN;
