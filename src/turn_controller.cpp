@@ -68,15 +68,13 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
 
             loop_rate.sleep();
         }
-    } else
-    {
+    } else {
     ROS_ERROR("Failed to call service. No turn performed.");
     }
 
     if (reset_client.call(srv)) {
         ROS_INFO("Succesfully called a service");
-    } else
-    {
+    } else {
         ROS_ERROR("Failed to call service. No turn performed.");
     }
 

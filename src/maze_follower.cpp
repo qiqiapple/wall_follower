@@ -6,7 +6,7 @@
 #include <wall_follower/ResetPWM.h>
 #include <math.h>
   
-int d1, d2, d3, d4, d5;
+int front_left, front_right, back_left, back_right, front;
 
 class MazeController {
 
@@ -29,11 +29,11 @@ public:
     }
 
     void MazeCallback(const ras_arduino_msgs::ADConverterConstPtr &msg) {
-        d1 = msg->ch1;
-        d2 = msg->ch2;
-        d3 = msg->ch3;
-        d4 = msg->ch4;
-        d5 = msg->ch5;
+        front_left = msg->ch1;
+        front_right = msg->ch2;
+        back_left = msg->ch3;
+        back_right = msg->ch4;
+        front = msg->ch5;
     }
 
     void forward() {
@@ -111,20 +111,24 @@ private:
    {
        ros::spinOnce();
 
-       if (d5 < thres_front && d5 > 0){
-            if (d1 > 0 && d1 < 20 && d2 > 0 && d2 < 20)
+       if (front < thres_front && front > 0){
+            if (front_left > 0 &&
+                    front_left < 20 &&
+                    front_right > 0 &&
+                    front_right < 20)
                state = 5;
-            else if (d1 > d2)
+            else if (front_left > front_right) {// ||
+                     //(front_right == 0 && front_left > 0))
                 state = 2;
             else
                 state = 1;
        }
        else{
-           if ((d1 > 0 && (d1 < d2 || d2 == 0)) && (d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)) {
-            //if(d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)
+           if ((front_left > 0 && (front_left < front_right || front_right == 0)) && (front_left < 30 && front_left > 0 && back_left < 30 && back_left > 0)) {
                 state = 3;
-           } else if ((d2 > 0 && (d2 < d1 || d1 == 0)) && (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)) {
-            //if (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)
+           } else if ((front_right > 0 &&
+                       (front_right < front_left || front_left == 0)) &&
+                      (front_right < 30 && front_right > 0 && back_right < 30 && back_right >0)) {
                 state = 4;
            }
             else
