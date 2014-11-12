@@ -120,6 +120,7 @@ private:
             else if (front_left > front_right) {// ||
                      //(front_right == 0 && front_left > 0))
                 state = 2;
+            }
             else
                 state = 1;
        }
