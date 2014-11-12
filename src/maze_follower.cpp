@@ -21,6 +21,8 @@ public:
         twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
         turn_client = n.serviceClient<wall_follower::MakeTurn>("/make_turn");
         follow_client = n.serviceClient<wall_follower::FollowWall>("/follow_wall");
+        reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
+
     }
 
     void MazeCallback(const ras_arduino_msgs::ADConverterConstPtr &msg) {
@@ -31,7 +33,18 @@ public:
         d5 = msg->ch5;
     }
 
-    void stay() {
+    void forward() {
+
+        wall_follower::ResetPWM srv;
+        srv.request.reset = 1;
+
+        if (reset_client.call(srv)) {
+            ROS_INFO("Succesfully called a service");
+        } else
+        {
+            ROS_ERROR("Failed to call service. No turn performed.");
+        }
+
         msg.linear.x = 0.1;
         msg.linear.y = 0;
         msg.linear.z = 0;
@@ -47,8 +60,8 @@ public:
     void setClientCall(int state) {
         srv_turn.request.state = state;
         srv_follow.request.state = state;
-        if (state == 1 || state == 2) {
-            srv_turn.request.degrees = 90;
+        if (state == 1 || state == 2 || state == 5) {
+            srv_turn.request.degrees = (state == 1 || state == 2) ? 90 : 180;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
               }
@@ -71,6 +84,7 @@ public:
 private:
     ros::ServiceClient turn_client;
     ros::ServiceClient follow_client;
+    ros::ServiceClient reset_client;
     wall_follower::MakeTurn srv_turn;
     wall_follower::FollowWall srv_follow;
 
@@ -93,10 +107,12 @@ private:
        ros::spinOnce();
 
        if (d5 < thres_front && d5 > 0){
-         if (d1 < d2)
-            state = 1;
-         else
-            state = 2;
+            if (d1 > 0 && d1 < 20 && d2 > 0 && d2 < 20)
+               state = 5;
+            else if (d1 > d2)
+                state = 2;
+            else
+                state = 1;
        }
        else{
          if(d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)
@@ -110,7 +126,7 @@ private:
        ROS_INFO("State: %d", state);
 
        if (state == 0) {
-        mc.stay();
+        mc.forward();
         mc.publishMsg();
        } else {
         mc.setClientCall(state);

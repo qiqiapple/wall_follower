@@ -28,7 +28,7 @@ bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::
         sensor1 = distance_sensor_rightfront;
         sensor2 = distance_sensor_rightback;
         flag = 1;
-    } else return false;
+    } else return true;
 
     double alpha = flag*(-0.15);
     double diff_distance, angular_vel;
