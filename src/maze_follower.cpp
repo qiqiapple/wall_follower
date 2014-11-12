@@ -15,6 +15,7 @@ public:
     ros::NodeHandle n;
     ros::Publisher twist_pub;
     ros::Subscriber distance_sub;
+    int previous_state;
 
     MazeController() {
         n = ros::NodeHandle();
@@ -23,6 +24,7 @@ public:
         turn_client = n.serviceClient<wall_follower::MakeTurn>("/make_turn");
         follow_client = n.serviceClient<wall_follower::FollowWall>("/follow_wall");
         reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
+        previous_state = 0;
 
     }
 
@@ -37,13 +39,15 @@ public:
     void forward() {
 
         wall_follower::ResetPWM srv;
-        srv.request.reset = 1;
+        srv.request.reset = 2;
 
-        if (reset_client.call(srv)) {
-            ROS_INFO("Succesfully called a service");
-        } else
-        {
-            ROS_ERROR("Failed to call service. No turn performed.");
+        if (previous_state != 0) {
+            if (reset_client.call(srv)) {
+                ROS_INFO("Succesfully called a service");
+            } else
+            {
+                ROS_ERROR("Failed to call service. No turn performed.");
+            }
         }
 
         msg.linear.x = 0.1;
@@ -116,12 +120,15 @@ private:
                 state = 1;
        }
        else{
-         if(d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)
-            state = 3;
-         else if (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)
-            state = 4;
-         else
-            state = 0;
+           if ((d1 > 0 && d1 < d2) && (d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)) {
+            //if(d1 < 30 && d1 > 0 && d3 < 30 && d3 > 0)
+                state = 3;
+           } else if ((d2 > 0 && d2 < d1) && (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)) {
+            //if (d2 < 30 && d2 > 0 && d4 < 30 && d4 >0)
+                state = 4;
+           }
+            else
+                state = 0;
        }
 
        ROS_INFO("State: %d", state);
@@ -133,6 +140,7 @@ private:
         mc.setClientCall(state);
        }
 
+       mc.previous_state = state;
        state = 0;
 
        loop_rate.sleep();
