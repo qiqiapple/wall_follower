@@ -42,7 +42,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
         msg.angular.z = -1.57/2;
     } else return true;
 
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(20);
 
     int left_encoder = 0;
     int right_encoder = 0;
