@@ -10,7 +10,7 @@
 
 enum {FORWARD = 0, LEFT_TURN = 1, RIGHT_TURN = 2, FOLLOW_LEFT = 3, FOLLOW_RIGHT = 4};
   
-int front_left, front_right, back_left, back_right, front, state;
+int front_left, front_right, back_left, back_right, forward_left, forward_right, state;
 
 class MazeController {
 
@@ -37,7 +37,8 @@ public:
         front_right = msg->ch2;
         back_left = msg->ch3;
         back_right = msg->ch4;
-        front = msg->ch5;
+        forward_right = msg->ch5;
+        forward_left = msg->ch6;
     }
 
     void forward() {
@@ -69,7 +70,7 @@ public:
     void setClientCall(int state) {
         srv_turn.request.state = state;
         srv_follow.request.state = state;
-        if (state == 1 || state == 2 || state == 5) {
+        if (state == LEFT_TURN || state == RIGHT_TURN) {
             srv_turn.request.degrees = 90;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
@@ -114,14 +115,17 @@ private:
 
     ros::Rate loop_rate(10);
 
-    int thres_front = 20; //HERE TO CHANGE!
+    int tresh_front = 25; //HERE TO CHANGE!
     state = FORWARD;
 
    while (ros::ok())
    {
        ros::spinOnce();
 
-       if (front < thres_front && front > 0){
+       if (forward_left < tresh_front &&
+               forward_left > 0 &&
+               forward_right < tresh_front &&
+               forward_right > 0){
            if (front_left > front_right ||
                    back_left > back_right) {
                 state = LEFT_TURN;
