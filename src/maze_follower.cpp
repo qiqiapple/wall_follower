@@ -111,11 +111,11 @@ public:
 
     //Check if there is a rapid change in distance measured by ir sensors on the left side
     bool checkSensorsDistanceLeft() {
-        if (abs(front_left - back_left) < 10 || state != previous_state) {
-                    previous_sensor_reading[0] = front_left;
-                    previous_sensor_reading[1] = back_left;
-        } else if (abs(front_left - previous_sensor_reading[0]) > 10) {
+        if (abs(front_left - previous_sensor_reading[0]) > 10) {
             return false;
+        } else if (abs(front_left - back_left) < 10 || state != previous_state) {
+            previous_sensor_reading[0] = front_left;
+            previous_sensor_reading[1] = back_left;
         }
 
         return true;
@@ -123,11 +123,11 @@ public:
 
     //Check if there is a rapid change in distance measured by ir sensors on the right side
     bool checkSensorsDistanceRight() {
-        if (abs(front_right - back_right) < 10 || state != previous_state) {
-                    previous_sensor_reading[0] = front_right;
-                    previous_sensor_reading[1] = back_right;
-        } else if (abs(front_right - previous_sensor_reading[0]) > 10) {
+        if (abs(front_right - previous_sensor_reading[0]) > 10) {
             return false;
+        } else if (abs(front_right - back_right) < 10 || state != previous_state) {
+            previous_sensor_reading[0] = front_right;
+            previous_sensor_reading[1] = back_right;
         }
 
         return true;
