@@ -20,7 +20,9 @@ public:
     ros::Publisher twist_pub;
     ros::Subscriber distance_sub;
     int previous_state;
+    int previous_sensor_reading[2];
 
+    //Constructor
     MazeController() {
         n = ros::NodeHandle();
         distance_sub = n.subscribe("/ir_sensor_cm", 1, &MazeController::MazeCallback, this);
@@ -29,9 +31,15 @@ public:
         follow_client = n.serviceClient<wall_follower::FollowWall>("/follow_wall");
         reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
         previous_state = 0;
+        previous_sensor_reading[0] = 0;
+        previous_sensor_reading[1] = 0;
 
     }
 
+    //Destructor
+    ~MazeController() {}
+
+    //Callback for using IR sensor values
     void MazeCallback(const ras_arduino_msgs::ADConverterConstPtr &msg) {
         front_left = msg->ch1;
         front_right = msg->ch2;
@@ -41,6 +49,7 @@ public:
         forward_left = msg->ch6;
     }
 
+    //Method to make the robot drive forward
     void forward() {
 
         wall_follower::ResetPWM srv;
@@ -63,14 +72,15 @@ public:
         msg.angular.z = 0;
     }
 
+    //Publishes a Twist message
     void publishMsg() {
         twist_pub.publish(msg);
     }
 
+    //Sends service message through chosen client to perform desired task
     void setClientCall(int state) {
-        srv_turn.request.state = state;
-        srv_follow.request.state = state;
         if (state == LEFT_TURN || state == RIGHT_TURN) {
+            srv_turn.request.state = state;
             srv_turn.request.degrees = 90;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
@@ -80,7 +90,8 @@ public:
                 ROS_ERROR("Failed to call turn service in maze_follower");
               }
         }
-        else if (state == 3 || state == 4) {
+        else if (state == FOLLOW_LEFT || state == FOLLOW_RIGHT) {
+            srv_follow.request.state = state;
             if (follow_client.call(srv_follow)) {
                 ROS_INFO("Succesfully called a service");
               }
@@ -91,10 +102,35 @@ public:
         }
     }
 
+    //Outputs if the state changes
     void changeState(int s) {
         std::cout << "want to change the state " << s << std::endl;
         std::cin.ignore();
         state = s;
+    }
+
+    //Check if there is a rapid change in distance measured by ir sensors on the left side
+    bool checkSensorsDistanceLeft() {
+        if (abs(front_left - back_left) < 10 || state != previous_state) {
+                    previous_sensor_reading[0] = front_left;
+                    previous_sensor_reading[1] = back_left;
+        } else if (abs(front_left - previous_sensor_reading[0]) > 10) {
+            return false;
+        }
+
+        return true;
+    }
+
+    //Check if there is a rapid change in distance measured by ir sensors on the right side
+    bool checkSensorsDistanceRight() {
+        if (abs(front_right - back_right) < 10 || state != previous_state) {
+                    previous_sensor_reading[0] = front_right;
+                    previous_sensor_reading[1] = back_right;
+        } else if (abs(front_right - previous_sensor_reading[0]) > 10) {
+            return false;
+        }
+
+        return true;
     }
 
 private:
@@ -115,7 +151,8 @@ private:
 
     ros::Rate loop_rate(10);
 
-    int tresh_front = 25; //HERE TO CHANGE!
+    //Treshold for when the robot should react on obstacles in front of it
+    int tresh_front = 15;
     state = FORWARD;
 
    while (ros::ok())
@@ -151,15 +188,55 @@ private:
 
        ROS_INFO("State: %d", state);
 
+        switch (state) {
+        case FORWARD:
+            mc.forward();
+            mc.publishMsg();
+            break;
+
+        case LEFT_TURN:
+            mc.setClientCall(state);
+            break;
+
+        case RIGHT_TURN:
+            mc.setClientCall(state);
+            break;
+
+        case FOLLOW_LEFT:
+            if (state != mc.previous_state) {
+                mc.previous_sensor_reading[0] = front_left;
+                mc.previous_sensor_reading[1] = back_left;
+            }
+            if (mc.checkSensorsDistanceLeft())
+                mc.setClientCall(state);
+            else {
+                mc.forward();
+                mc.publishMsg();
+            }
+            break;
+
+        case FOLLOW_RIGHT:
+            if (state != mc.previous_state) {
+                mc.previous_sensor_reading[0] = front_right;
+                mc.previous_sensor_reading[1] = back_right;
+            }
+            if (mc.checkSensorsDistanceRight()) mc.setClientCall(state);
+            else {
+                mc.forward();
+                mc.publishMsg();
+            }
+            break;
+        }
+
+/*
        if (state == FORWARD) {
         mc.forward();
         mc.publishMsg();
        } else {
         mc.setClientCall(state);
        }
-
+*/
        mc.previous_state = state;
-       state = FORWARD;
 
        loop_rate.sleep();
 
