@@ -192,6 +192,7 @@ public:
 
     int checkState() {
         int tresh_front = 15;
+	int s;
         //Checks the ir sensors which decides what state to use
        if (forward_left < tresh_front &&
                forward_left > 0 &&
