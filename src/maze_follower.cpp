@@ -61,8 +61,8 @@ public:
     //Method to make the robot drive forward
     void forward() {
 
-        wall_follower::ResetPWM srv;
-        srv.request.reset = 2;
+        //wall_follower::ResetPWM srv;
+        //srv.request.reset = 2;
 
         /*if (previous_state != 0) {
             if (reset_client.call(srv)) {
@@ -82,17 +82,6 @@ public:
     }
 
     void forward(double distance) {
-        wall_follower::ResetPWM srv;
-        srv.request.reset = 2;
-
-        /*if (previous_state != 0) {
-            if (reset_client.call(srv)) {
-                ROS_INFO("Succesfully called reset pwm service");
-            } else
-            {
-                ROS_ERROR("Failed to call service. No turn performed.");
-            }
-        }*/
 
         double wheel_radius = 5.0;
 
@@ -178,6 +167,20 @@ public:
         return true;
     }
 
+    void checkSensors() {
+        previous_sensor_reading[0] = front_left;
+        previous_sensor_reading[1] = back_left;
+        bool back = false;
+        bool front = false;
+
+        while (!back && !front) {
+            if (abs(front_left - previous_sensor_reading[0]) > 20) front = true;
+            if (abs(back_left - previous_sensor_reading[1]) > 20) front = true;
+            forward();
+        }
+
+    }
+
     //Check if there is a rapid change in distance measured by ir sensors on the right side
     bool checkSensorsDistanceRight() {
         if (abs(front_right - previous_sensor_reading[0]) > 8) {
@@ -194,10 +197,10 @@ public:
         int tresh_front = 15;
 	int s;
         //Checks the ir sensors which decides what state to use
-       if (forward_left < tresh_front &&
-               forward_left > 0 &&
-               forward_right < tresh_front &&
-               forward_right > 0){
+       if ((forward_left < tresh_front &&
+            forward_left > 0) ||
+               (forward_right < tresh_front &&
+               forward_right > 0)){
            if (front_left > front_right ||
                    back_left > back_right) {
                 s = LEFT_TURN;
@@ -251,33 +254,7 @@ private:
    {
        ros::spinOnce();
 
-        //Checks the ir sensors which decides what state to use
-    /*   if (forward_left < tresh_front &&
-               forward_left > 0 &&
-               forward_right < tresh_front &&
-               forward_right > 0){
-           if (front_left > front_right ||
-                   back_left > back_right) {
-                state = LEFT_TURN;
-            }
-            else
-                state = RIGHT_TURN;
-       }
-       else{
-           if (front_left < front_right &&
-                   back_left < back_right &&
-                   front_left < 30 &&
-                   back_left < 30) {
-                state = FOLLOW_LEFT;
-           } else if (front_right < front_left &&
-                      back_right < back_left &&
-                      front_right < 30 &&
-                      back_right < 30) {
-                state = FOLLOW_RIGHT;
-           }
-            else
-                state = FORWARD;
-       }*/
+       //Returns the state the robot is in depending on the ir sensor readings
        state = mc.checkState();
 
        //Decides the state depending on the state transition
@@ -332,7 +309,8 @@ private:
         case TWO_LEFT:
             mc.forward(20.0);
             mc.setClientCall(LEFT_TURN);
-            mc.forward(20.0);
+            mc.checkSensors();
+            //mc.forward(20.0);
 	    mc.setClientCall(LEFT_TURN);
             //Make left turn drive forward until both sensors past the wall snippet and make another left turn
         }
