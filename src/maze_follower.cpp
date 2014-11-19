@@ -79,6 +79,8 @@ public:
         msg.angular.x = 0;
         msg.angular.y = 0;
         msg.angular.z = 0;
+
+        publishMsg();
     }
 
     void forward(double distance) {
@@ -267,7 +269,6 @@ private:
         switch (state) {
         case FORWARD:
             mc.forward();
-            mc.publishMsg();
             break;
 
         case LEFT_TURN:
