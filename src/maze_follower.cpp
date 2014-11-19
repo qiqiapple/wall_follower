@@ -111,7 +111,7 @@ public:
         int left_encoder = 0;
         int right_encoder = 0;
 
-        ros::Rate loop_rate(20);
+        ros::Rate loop_rate(30);
         while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
 
             ROS_INFO("Ticks to rotate: %d", ticks);
@@ -323,16 +323,17 @@ private:
             }
             if (mc.checkSensorsDistanceRight()) mc.setClientCall(state);
             else {
-                mc.forward(15.0);
+                mc.forward(20.0);
                 //mc.publishMsg();
             }
             //mc.setClientCall(state);
             break;
 
         case TWO_LEFT:
-            mc.forward(15.0);
+            mc.forward(20.0);
             mc.setClientCall(LEFT_TURN);
-            mc.forward(15.0);
+            mc.forward(20.0);
+	    mc.setClientCall(LEFT_TURN);
             //Make left turn drive forward until both sensors past the wall snippet and make another left turn
         }
 
