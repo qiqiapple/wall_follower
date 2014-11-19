@@ -199,26 +199,27 @@ public:
                forward_right > 0){
            if (front_left > front_right ||
                    back_left > back_right) {
-                state = LEFT_TURN;
+                s = LEFT_TURN;
             }
             else
-                state = RIGHT_TURN;
+                s = RIGHT_TURN;
        }
        else{
            if (front_left < front_right &&
                    back_left < back_right &&
                    front_left < 30 &&
                    back_left < 30) {
-                state = FOLLOW_LEFT;
+                s = FOLLOW_LEFT;
            } else if (front_right < front_left &&
                       back_right < back_left &&
                       front_right < 30 &&
                       back_right < 30) {
-                state = FOLLOW_RIGHT;
+                s = FOLLOW_RIGHT;
            }
             else
-                state = FORWARD;
+                s = FORWARD;
        }
+       return s;
     }
 
 private:
