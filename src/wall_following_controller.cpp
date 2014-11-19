@@ -2,6 +2,8 @@
 #include <geometry_msgs/Twist.h>
 #include <ras_arduino_msgs/ADConverter.h>
 #include <wall_follower/FollowWall.h>
+
+#define INVALID 1000
   
 static int distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback;
 ros::Publisher twist_pub;
@@ -38,6 +40,9 @@ bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::
       msg.linear.x = 0.1;
       msg.angular.z = flag*0.314;
 
+    } else if (sensor1 > 15 && sensor1 < INVALID && sensor2 > 15 && sensor2 < INVALID) {
+       msg.linear.x = 0.1;
+       msg.angular.z = flag*(-0.314);
     } else {
 
      msg.linear.x = 0.1;
