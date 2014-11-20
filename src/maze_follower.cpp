@@ -92,7 +92,7 @@ public:
         int left_encoder = 0;
         int right_encoder = 0;
 
-        ros::Rate loop_rate(30);
+        ros::Rate loop_rate(20);
         while (abs(left_encoder) < ticks && abs(right_encoder) < ticks) {
 
             ROS_INFO("Ticks to rotate: %d", ticks);
@@ -173,7 +173,7 @@ public:
         bool front = false;
 	ros::Rate loop_rate(10);
 
-        while (!back && !front) {
+        while (!back || !front) {
 	    ros::spinOnce();
             if (front_left < 15) front = true;
             if (back_left < 15) back = true;
@@ -182,15 +182,19 @@ public:
 	    loop_rate.sleep();
         }
 
-	forward(23.0);
+	//forward(10.0);
 	ros::spinOnce();
-	if (front_left > 25 && back_left > 25) setClientCall(LEFT_TURN);
+	//if (front_left > 25 && back_left > 25) setClientCall(LEFT_TURN);
+	if (front_left > 25) {
+		forward(10.0);
+		setClientCall(LEFT_TURN);
+	}
 
     }
 
     //Checks the ir sensors which decides what state to use
     int checkState() {
-        int tresh_front = 15;
+        int tresh_front = 17;
 	int s;
 
        if ((forward_left < tresh_front &&
@@ -242,8 +246,7 @@ private:
 
     ros::Rate loop_rate(10);
 
-    //Treshold for when the robot should react on obstacles in front of it
-    //int tresh_front = 15;
+    //Initial state
     state = FORWARD;
 
    while (ros::ok())
@@ -297,7 +300,7 @@ private:
             break;
 
         case TWO_LEFT:
-            mc.forward(23.0);
+            mc.forward(22.0);
             mc.setClientCall(LEFT_TURN);
             mc.checkSensorsTurn();
         }
