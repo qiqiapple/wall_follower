@@ -1,11 +1,12 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "geometry_msgs/Twist.h"
-#include "ras_arduino_msgs/ADConverter.h"
-  
-#include <sstream>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
+#include <ras_arduino_msgs/ADConverter.h>
+#include <wall_follower/FollowWall.h>
 
+#define INVALID 1000
+  
 static int distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback;
+ros::Publisher twist_pub;
 
 void DistanceCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
  {
@@ -13,43 +14,65 @@ void DistanceCallback(const ras_arduino_msgs::ADConverter::ConstPtr &msg)
    distance_sensor_rightfront = msg->ch2;
    distance_sensor_leftback = msg->ch3;
    distance_sensor_rightback = msg->ch4;
-   ROS_INFO("dlf: [%d], drf: [%d], dlb: [%d], drb: [%d]", distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback);
+   //ROS_INFO("dlf: [%d], drf: [%d], dlb: [%d], drb: [%d]", distance_sensor_leftfront, distance_sensor_rightfront, distance_sensor_leftback, distance_sensor_rightback);
  }
+
+bool follow(wall_follower::FollowWall::Request &req, wall_follower::FollowWall::Response &res) {
+
+    geometry_msgs::Twist msg;
+    int sensor1, sensor2, flag;
+
+    if (req.state == 3) {
+        sensor1 = distance_sensor_leftfront;
+        sensor2 = distance_sensor_leftback;
+        flag = -1;
+    } else if (req.state == 4) {
+        sensor1 = distance_sensor_rightfront;
+        sensor2 = distance_sensor_rightback;
+        flag = 1;
+    } else return true;
+
+    double alpha = flag*(-0.15);
+    double diff_distance, angular_vel;
+
+    if (sensor1 < 8 && sensor1 > 0 && sensor2 < 8 && sensor2 > 0) {
+
+      msg.linear.x = 0.1;
+      msg.angular.z = flag*0.314;
+
+    } else if (sensor1 > 15 && sensor1 < INVALID && sensor2 > 15 && sensor2 < INVALID) {
+       msg.linear.x = 0.1;
+       msg.angular.z = flag*(-0.314);
+    } else {
+
+     msg.linear.x = 0.1;
+
+     diff_distance = (double)(sensor1 - sensor2);
+     angular_vel = alpha*diff_distance;
+     msg.angular.z = angular_vel;
+    }
+
+    msg.linear.y = 0;
+    msg.linear.z = 0;
+    msg.angular.x = 0;
+    msg.angular.y = 0;
+
+    twist_pub.publish(msg);
+
+    return true;
+
+}
 
  int main(int argc, char **argv)
  {
-   double alpha = -0.01; // To tune
-   double beta = 0.01;  // To tune
-   double diff_distance1, diff_distance2, angular_vel;
-   ros::init(argc, argv, "wall_following_controller");
-   ros::NodeHandle n;
-   ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, DistanceCallback);
-   ros::Publisher twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
 
-   geometry_msgs::Twist msg;
-   msg.linear.x = 0.1;
-   msg.linear.y = 0;
-   msg.linear.z = 0;
-   msg.angular.x = 0;
-   msg.angular.y = 0;
-  // msg.angular.z = 100;
-   ros::Rate loop_rate(10);
+    ros::init(argc, argv, "wall_following_controller");
+    ros::NodeHandle n;
+    ros::Subscriber distance_sub = n.subscribe("/ir_sensor_cm", 1, DistanceCallback);
+    twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
+    ros::ServiceServer service = n.advertiseService("/follow_wall", follow);
 
-   int count = 0;
-   while (ros::ok())
-   {
-     ros::Subscriber distance_sub = n.subscribe("/kobuki/adc", 1, DistanceCallback);
-     diff_distance1 = (double)(distance_sensor_rightfront - distance_sensor_rightback);
-     diff_distance2 = (double)(distance_sensor_rightfront - distance_sensor_leftfront);
-     angular_vel = alpha*diff_distance1 + beta*diff_distance2;
-     msg.angular.z = angular_vel;
-     twist_pub.publish(msg);
-     ROS_INFO("v: %f, w: %f", msg.linear.x,msg.angular.z);
+    ros::spin();
 
-     ros::spinOnce(); 
-     loop_rate.sleep();
-     ++count;
-   }
-  
-   return 0;
+    return 0;
  }
