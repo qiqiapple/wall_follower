@@ -182,9 +182,7 @@ public:
 	    loop_rate.sleep();
         }
 
-	//forward(10.0);
 	ros::spinOnce();
-	//if (front_left > 25 && back_left > 25) setClientCall(LEFT_TURN);
 	if (front_left > 25) {
 		forward(10.0);
 		setClientCall(LEFT_TURN);
