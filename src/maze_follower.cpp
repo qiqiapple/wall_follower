@@ -247,6 +247,7 @@ private:
     //Initial state
     state = FORWARD;
 
+	//Start comment HERE
    while (ros::ok())
    {
        ros::spinOnce();
@@ -308,6 +309,9 @@ private:
        loop_rate.sleep();
 
    }
+//End comment HERE
+/*	mc.forward(25);
+	mc.setClientCall(LEFT_TURN);*/
 
    return 0;
  }
