@@ -61,18 +61,6 @@ public:
     //Method to make the robot drive forward
     void forward() {
 
-        //wall_follower::ResetPWM srv;
-        //srv.request.reset = 2;
-
-        /*if (previous_state != 0) {
-            if (reset_client.call(srv)) {
-                ROS_INFO("Succesfully called reset pwm service");
-            } else
-            {
-                ROS_ERROR("Failed to call service. No turn performed.");
-            }
-        }*/
-
         msg.linear.x = 0.1;
         msg.linear.y = 0;
         msg.linear.z = 0;
