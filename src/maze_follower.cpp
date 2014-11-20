@@ -52,6 +52,7 @@ public:
         forward_left = msg->ch6;
     }
 
+    //Callback for the encoders
     void EncoderCallback(const ras_arduino_msgs::EncodersConstPtr &msg) {
         delta_encoder_left = msg->delta_encoder2;
         delta_encoder_right = msg->delta_encoder1;
@@ -60,18 +61,6 @@ public:
 
     //Method to make the robot drive forward
     void forward() {
-
-        //wall_follower::ResetPWM srv;
-        //srv.request.reset = 2;
-
-        /*if (previous_state != 0) {
-            if (reset_client.call(srv)) {
-                ROS_INFO("Succesfully called reset pwm service");
-            } else
-            {
-                ROS_ERROR("Failed to call service. No turn performed.");
-            }
-        }*/
 
         msg.linear.x = 0.1;
         msg.linear.y = 0;
@@ -83,6 +72,7 @@ public:
         publishMsg();
     }
 
+    //Method for driving the robot a specific distance
     void forward(double distance) {
 
         double wheel_radius = 5.0;
@@ -129,7 +119,7 @@ public:
     void setClientCall(int state) {
         if (state == LEFT_TURN || state == RIGHT_TURN) {
             srv_turn.request.state = state;
-            srv_turn.request.degrees = 90;
+            srv_turn.request.degrees = 85;
             if (turn_client.call(srv_turn)) {
                 ROS_INFO("Succesfully called a service");
               }
@@ -161,44 +151,48 @@ public:
     bool checkSensorsDistanceLeft() {
         if (abs(front_left - previous_sensor_reading[0]) > 8) {
             return false;
-        } /*else if (abs(front_left - back_left) < 10) {
-            previous_sensor_reading[0] = front_left;
-            previous_sensor_reading[1] = back_left;
-        }*/
+        }
 
         return true;
     }
 
-    void checkSensors() {
+   //Check if there is a rapid change in distance measured by ir sensors on the right side
+    bool checkSensorsDistanceRight() {
+        if (abs(front_right - previous_sensor_reading[0]) > 8) {
+            return false;
+        }
+
+        return true;
+    }
+
+    //Checks whenever the two sensors have registered an edge of wall
+    void checkSensorsTurn() {
         previous_sensor_reading[0] = front_left;
         previous_sensor_reading[1] = back_left;
         bool back = false;
         bool front = false;
+	ros::Rate loop_rate(10);
 
         while (!back && !front) {
-            if (abs(front_left - previous_sensor_reading[0]) > 20) front = true;
-            if (abs(back_left - previous_sensor_reading[1]) > 20) front = true;
+	    ros::spinOnce();
+            if (front_left < 15) front = true;
+            if (back_left < 15) back = true;
+	    ROS_INFO("front: %d back: %d", front, back);
             forward();
+	    loop_rate.sleep();
         }
 
+	forward(23.0);
+	ros::spinOnce();
+	if (front_left > 25 && back_left > 25) setClientCall(LEFT_TURN);
+
     }
 
-    //Check if there is a rapid change in distance measured by ir sensors on the right side
-    bool checkSensorsDistanceRight() {
-        if (abs(front_right - previous_sensor_reading[0]) > 8) {
-            return false;
-        }/* else if (abs(front_right - back_right) < 10) {
-            previous_sensor_reading[0] = front_right;
-            previous_sensor_reading[1] = back_right;
-        }*/
-
-        return true;
-    }
-
+    //Checks the ir sensors which decides what state to use
     int checkState() {
         int tresh_front = 15;
 	int s;
-        //Checks the ir sensors which decides what state to use
+
        if ((forward_left < tresh_front &&
             forward_left > 0) ||
                (forward_right < tresh_front &&
@@ -287,11 +281,8 @@ private:
             if (mc.checkSensorsDistanceLeft())
                 mc.setClientCall(state);
             else {
-                mc.forward(15.0);
-                mc.setClientCall(LEFT_TURN);
-                //mc.publishMsg();
+                mc.forward(22.0);
             }
-            //mc.setClientCall(state);
             break;
 
         case FOLLOW_RIGHT:
@@ -301,19 +292,14 @@ private:
             }
             if (mc.checkSensorsDistanceRight()) mc.setClientCall(state);
             else {
-                mc.forward(20.0);
-                //mc.publishMsg();
+                mc.forward(22.0);
             }
-            //mc.setClientCall(state);
             break;
 
         case TWO_LEFT:
-            mc.forward(20.0);
+            mc.forward(23.0);
             mc.setClientCall(LEFT_TURN);
-            mc.checkSensors();
-            //mc.forward(20.0);
-	    mc.setClientCall(LEFT_TURN);
-            //Make left turn drive forward until both sensors past the wall snippet and make another left turn
+            mc.checkSensorsTurn();
         }
 
        mc.previous_state = state;
