@@ -5,6 +5,7 @@
 #include <wall_follower/MakeTurn.h>
 #include <wall_follower/FollowWall.h>
 #include <wall_follower/ResetPWM.h>
+#include "std_msgs/String.h"
 #include <math.h>
 
 #define INVALID 1000
