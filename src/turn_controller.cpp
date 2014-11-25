@@ -3,11 +3,13 @@
 #include <ras_arduino_msgs/Encoders.h>
 #include <wall_follower/MakeTurn.h>
 #include <wall_follower/ResetPWM.h>
+#include <std_msgs/Bool.h>
 #include <math.h>
   
 static int delta_encoder_left, delta_encoder_right;
 ros::Publisher twist_pub;
 ros::ServiceClient reset_client;
+ros::Publisher turn_pub;
 
 void EncoderCallback(const ras_arduino_msgs::EncodersConstPtr &msg) {
     delta_encoder_left = msg->delta_encoder2;
@@ -18,6 +20,8 @@ void EncoderCallback(const ras_arduino_msgs::EncodersConstPtr &msg) {
 bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Response &res) {
 
     geometry_msgs::Twist msg;
+    std_msgs::Bool turn;
+    turn.data = true;
     double base = 0.21;
     double wheel_radius = 0.05;
 
@@ -62,6 +66,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
             right_encoder += delta_encoder_right;
 
             twist_pub.publish(msg);
+            turn_pub.publish(turn);
 
             ROS_INFO("w = %f", msg.angular.z);
             ROS_INFO("Left encoder: %d Right encoder: %d", left_encoder, right_encoder);
@@ -81,6 +86,9 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     msg.angular.z = 0;
     twist_pub.publish(msg);
 
+    turn.data = false;
+    turn_pub.publish(turn);
+
     return true;
 }
 
@@ -93,7 +101,7 @@ bool turn(wall_follower::MakeTurn::Request &req, wall_follower::MakeTurn::Respon
     twist_pub = n.advertise<geometry_msgs::Twist>("/motor_controller/twist", 1);
     ros::ServiceServer service = n.advertiseService("/make_turn", turn);
     reset_client = n.serviceClient<wall_follower::ResetPWM>("/reset_pwm");
-
+    turn_pub = n.advertise<std_msgs::Bool>("/robot_turn", 1);
 
     ROS_INFO("Ready to make a turn.");
     ros::spin();

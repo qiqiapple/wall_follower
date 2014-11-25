@@ -179,15 +179,16 @@ public:
         previous_sensor_reading[1] = back_left;
         bool back = false;
         bool front = false;
-	ros::Rate loop_rate(10);
+        ros::Rate loop_rate(10);
 
         while (!back || !front) {
-	    ros::spinOnce();
+            ros::spinOnce();
+            if (front_left < 30 && back_left < 30) break;
             if (front_left < 15) front = true;
             if (back_left < 15) back = true;
-	    ROS_INFO("front: %d back: %d", front, back);
+            ROS_INFO("front: %d back: %d", front, back);
             forward();
-	    loop_rate.sleep();
+            loop_rate.sleep();
         }
 
 	ros::spinOnce();
