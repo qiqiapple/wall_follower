@@ -1,0 +1,18 @@
+<launch>
+	<!-- Run Turn Controller -->
+	<node pkg="wall_follower" type="turn_controller" name="turn_controller" output="screen" >
+	</node>
+
+	<!-- Run Wall Follower -->
+	<node pkg="wall_follower" type="wall_follower" name="wall_follower" output="screen" >
+	</node>
+
+	<!-- Run Maze Follower -->
+	<node pkg="wall_follower" type="maze_follower" name="maze_follower" output="screen" >
+	</node>
+
+	<!-- Run Ir Sensors -->
+	<node pkg="ir_sensors" type="ir_sensors" name="ir_sensors" output="screen" >
+	</node>
+
+</launch>
